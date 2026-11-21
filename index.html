@@ -1,474 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#10152e">
-<title>Index Memory Game PRO</title>
-
-<style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg,#10152e,#25104a,#10152e);
-  color: white;
-  min-height: 100vh;
-  text-align: center;
-}
-
-header {
-  padding: 20px 10px;
-}
-
-h1 {
-  font-size: 30px;
-  color: #00e5ff;
-  text-shadow: 0 0 15px #00e5ff;
-}
-
-.subtitle {
-  color: #c5b8ff;
-  margin-top: 8px;
-}
-
-.screen {
-  display: none;
-  padding: 15px;
-}
-
-.screen.active {
-  display: block;
-}
-
-.panel {
-  max-width: 520px;
-  margin: 20px auto;
-  padding: 22px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.2);
-  border-radius: 22px;
-  box-shadow: 0 10px 35px #0007;
-}
-
-button, select, input {
-  border: none;
-  border-radius: 12px;
-  padding: 13px 18px;
-  font-size: 16px;
-  margin: 7px;
-}
-
-button {
-  background: linear-gradient(135deg,#00d9ff,#7654ff);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:active {
-  transform: scale(.95);
-}
-
-select, input {
-  background: #20284a;
-  color: white;
-  border: 1px solid #6975a8;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 8px;
-  max-width: 520px;
-  margin: 15px auto;
-}
-
-.stat {
-  background: #25264f;
-  padding: 13px 5px;
-  border-radius: 13px;
-  border: 1px solid #6758bd;
-}
-
-.stat strong {
-  display: block;
-  color: #00e5ff;
-  font-size: 22px;
-  margin-top: 5px;
-}
-
-#game {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 10px;
-  max-width: 520px;
-  margin: 20px auto;
-}
-
-.card {
-  aspect-ratio: 1;
-  perspective: 700px;
-  cursor: pointer;
-}
-
-.card-inner {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform .45s;
-}
-
-.card.flipped .card-inner,
-.card.matched .card-inner {
-  transform: rotateY(180deg);
-}
-
-.front, .back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backface-visibility: hidden;
-}
-
-.front {
-  background: linear-gradient(135deg,#5b35d5,#00bce8);
-  font-size: 35px;
-  box-shadow: 0 5px 15px #0006;
-}
-
-.back {
-  background: linear-gradient(135deg,#fff,#d7e6ff);
-  transform: rotateY(180deg);
-  font-size: clamp(25px,8vw,43px);
-  color: #17152f;
-}
-
-.matched .back {
-  background: linear-gradient(135deg,#74ffb0,#00c985);
-}
-
-.controls {
-  margin: 15px;
-}
-
-#message {
-  color: #ffe66d;
-  font-size: 19px;
-  margin: 15px;
-  min-height: 25px;
-}
-
-footer {
-  padding: 25px;
-  color: #aaa;
-  font-size: 13px;
-}
-
-@media(max-width:380px) {
-  #game {
-    gap: 6px;
-  }
-  .front {
-    font-size: 27px;
-  }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INDEX MEMORY PRO</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #111; color: #fff; padding: 20px; margin: 0; }
+        .btn { padding: 15px 30px; font-size: 18px; margin: 10px; border-radius: 8px; border: none; cursor: pointer; background: #00e676; color: black; font-weight: bold; width: 80%; max-width: 300px; }
+        #game { display: none; }
+    </style>
 </head>
-
 <body>
-
-<header>
-  <h1>🧠 INDEX MEMORY PRO</h1>
-  <p class="subtitle">Challenge Your Brain • Play • Win</p>
-</header>
-
-<!-- HOME SCREEN -->
-<section id="home" class="screen active">
-  <div class="panel">
-    <h2>🎮 Welcome Player!</h2>
-    <p style="margin:15px">Test your memory and become a champion.</p>
-
-    <input id="playerName" placeholder="Enter Your Name">
-
-    <h3 style="margin:15px">Select Level</h3>
-    <select id="difficulty">
-      <option value="easy">Easy - 12 Cards</option>
-      <option value="medium" selected>Medium - 16 Cards</option>
-      <option value="hard">Hard - 24 Cards</option>
-    </select>
-
-    <br>
-    <button onclick="startGame()">🚀 START GAME</button>
-    <button onclick="showBest()">🏆 BEST SCORE</button>
-
-    <p id="bestDisplay" style="margin-top:15px"></p>
-  </div>
-</section>
-
-<!-- GAME SCREEN -->
-<section id="play" class="screen">
-
-  <h2 id="welcome"></h2>
-
-  <div class="stats">
-    <div class="stat">⏱ TIME<strong id="timer">0</strong></div>
-    <div class="stat">👣 MOVES<strong id="moves">0</strong></div>
-    <div class="stat">⭐ SCORE<strong id="score">0</strong></div>
-  </div>
-
-  <div id="game"></div>
-
-  <div id="message">Find matching pairs!</div>
-
-  <div class="controls">
-    <button onclick="restartGame()">🔄 Restart</button>
-    <button onclick="goHome()">🏠 Home</button>
-    <button onclick="toggleSound()" id="soundBtn">🔊 Sound ON</button>
-  </div>
-
-</section>
-
-<!-- RESULT SCREEN -->
-<section id="result" class="screen">
-  <div class="panel">
-    <h1>🏆 YOU WON!</h1>
-    <h2 id="resultName" style="margin:20px"></h2>
-    <p id="resultStats"></p>
-    <br>
-    <button onclick="startGame()">🔄 PLAY AGAIN</button>
-    <button onclick="goHome()">🏠 HOME</button>
-  </div>
-</section>
-
-<footer>
-  INDEX MEMORY GAME PRO © 2026
-  <br>Made for Memory Champions
-</footer>
-
-<script>
-const emojis = [
-  "🍎","🍌","🍇","🍉","🍓","🍒",
-  "🍍","🥝","🥑","🍕","🍔","🍟"
-];
-
-let cards = [];
-let first = null;
-let second = null;
-let lock = false;
-let moves = 0;
-let score = 0;
-let matches = 0;
-let seconds = 0;
-let timerInterval = null;
-let started = false;
-let soundOn = true;
-let totalPairs = 0;
-
-function screen(id) {
-  document.querySelectorAll(".screen").forEach(s => {
-    s.classList.remove("active");
-  });
-  document.getElementById(id).classList.add("active");
-}
-
-function startGame() {
-  clearInterval(timerInterval);
-
-  const name = document.getElementById("playerName").value.trim() || "Player";
-  const level = document.getElementById("difficulty").value;
-
-  let count = level === "easy" ? 6 :
-              level === "medium" ? 8 : 12;
-
-  totalPairs = count;
-  moves = 0;
-  score = 0;
-  matches = 0;
-  seconds = 0;
-  first = null;
-  second = null;
-  lock = false;
-  started = false;
-
-  document.getElementById("welcome").textContent = "Hello " + name + "!";
-  document.getElementById("timer").textContent = "0";
-  document.getElementById("moves").textContent = "0";
-  document.getElementById("score").textContent = "0";
-  document.getElementById("message").textContent = "Find matching pairs!";
-
-  let selected = emojis.slice(0,count);
-  cards = [...selected,...selected];
-
-  cards.sort(() => Math.random() - 0.5);
-
-  const game = document.getElementById("game");
-
-  game.style.gridTemplateColumns =
-    level === "hard" ? "repeat(4,1fr)" : "repeat(4,1fr)";
-
-  game.innerHTML = "";
-
-  cards.forEach((emoji,index) => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.dataset.value = emoji;
-
-    card.innerHTML = `
-      <div class="card-inner">
-        <div class="front">❓</div>
-        <div class="back">${emoji}</div>
-      </div>
-    `;
-
-    card.onclick = () => flipCard(card);
-    game.appendChild(card);
-  });
-
-  screen("play");
-}
-
-function flipCard(card) {
-  if(lock || card.classList.contains("flipped") ||
-     card.classList.contains("matched")) return;
-
-  if(!started) {
-    started = true;
-    timerInterval = setInterval(() => {
-      seconds++;
-      document.getElementById("timer").textContent = seconds;
-    },1000);
-  }
-
-  card.classList.add("flipped");
-  playSound(500);
-
-  if(!first) {
-    first = card;
-    return;
-  }
-
-  second = card;
-  moves++;
-
-  document.getElementById("moves").textContent = moves;
-
-  if(first.dataset.value === second.dataset.value) {
-    first.classList.add("matched");
-    second.classList.add("matched");
-
-    matches++;
-    score += 100;
-
-    document.getElementById("score").textContent = score;
-    document.getElementById("message").textContent = "✨ Perfect Match!";
-
-    playSound(800);
-
-    first = null;
-    second = null;
-
-    if(matches === totalPairs) {
-      setTimeout(finishGame,700);
-    }
-
-  } else {
-    lock = true;
-    document.getElementById("message").textContent = "Try Again!";
-
-    setTimeout(() => {
-      first.classList.remove("flipped");
-      second.classList.remove("flipped");
-
-      first = null;
-      second = null;
-      lock = false;
-    },900);
-  }
-}
-
-function finishGame() {
-  clearInterval(timerInterval);
-
-  let finalScore = Math.max(0,score - Math.floor(seconds/2));
-
-  const name = document.getElementById("playerName").value.trim() || "Player";
-  const key = "memory_best_" + document.getElementById("difficulty").value;
-  const oldBest = Number(localStorage.getItem(key) || 0);
-
-  if(finalScore > oldBest) {
-    localStorage.setItem(key,finalScore);
-  }
-
-  document.getElementById("resultName").textContent =
-    "Congratulations " + name + "!";
-
-  document.getElementById("resultStats").innerHTML =
-    "⭐ Final Score: <b>" + finalScore + "</b><br><br>" +
-    "👣 Total Moves: " + moves + "<br><br>" +
-    "⏱ Time: " + seconds + " seconds<br><br>" +
-    "🎯 Matched Pairs: " + matches;
-
-  screen("result");
-}
-
-function restartGame() {
-  startGame();
-}
-
-function goHome() {
-  clearInterval(timerInterval);
-  screen("home");
-}
-
-function showBest() {
-  let easy = localStorage.getItem("memory_best_easy") || 0;
-  let medium = localStorage.getItem("memory_best_medium") || 0;
-  let hard = localStorage.getItem("memory_best_hard") || 0;
-
-  document.getElementById("bestDisplay").innerHTML =
-    "🏆 EASY: " + easy +
-    "<br>🥇 MEDIUM: " + medium +
-    "<br>🔥 HARD: " + hard;
-}
-
-function toggleSound() {
-  soundOn = !soundOn;
-  document.getElementById("soundBtn").textContent =
-    soundOn ? "🔊 Sound ON" : "🔇 Sound OFF";
-}
-
-function playSound(frequency) {
-  if(!soundOn) return;
-
-  try {
-    const audio = new AudioContext();
-    const oscillator = audio.createOscillator();
-    const gain = audio.createGain();
-
-    oscillator.frequency.value = frequency;
-    gain.gain.value = 0.06;
-
-    oscillator.connect(gain);
-    gain.connect(audio.destination);
-
-    oscillator.start();
-    oscillator.stop(audio.currentTime + 0.12);
-    oscillator.onended = () => audio.close();
-  } catch(e) {}
-}
-
-showBest();
-</script>
-
+    <h1>INDEX MEMORY PRO</h1>
+    <div id="lobby">
+        <button class="btn" id="loginBtn">Quick Match</button>
+        <p id="status">Tap above to start matching!</p>
+    </div>
+    <div id="game">
+        <h2>Room: <span id="roomId"></span></h2>
+        <h3>Score: <span id="score">0 - 0</span></h3>
+        <button class="btn" id="scoreBtn">Tap to Score!</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // Replace with your actual web app config from Firebase Console
+        const firebaseConfig = { apiKey: "API_KEY", databaseURL: "DATABASE_URL", projectId: "PROJECT_ID" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let user, currentRoomRef, currentRoomId;
+
+        document.getElementById('loginBtn').onclick = async () => {
+            document.getElementById('status').innerText = "Matching...";
+            const cred = await signInAnonymously(auth);
+            user = cred.user;
+            findMatch();
+        };
+
+        function findMatch() {
+            onValue(ref(db, 'rooms'), (snap) => {
+                const rooms = snap.val();
+                let joined = false;
+                if (rooms) {
+                    for (let id in rooms) {
+                        if (!rooms[id].player2 && rooms[id].player1 !== user.uid) {
+                            joinRoom(id);
+                            joined = true;
+                            break;
+                        }
+                    }
+                }
+                if (!joined) createRoom();
+            }, { onlyOnce: true });
+        }
+
+        function createRoom() {
+            currentRoomRef = push(ref(db, 'rooms'));
+            currentRoomId = currentRoomRef.key;
+            set(currentRoomRef, { player1: user.uid, score1: 0, player2: null, score2: 0 });
+            listenToRoom();
+        }
+
+        function joinRoom(id) {
+            currentRoomId = id;
+            currentRoomRef = ref(db, `rooms/${id}`);
+            set(ref(db, `rooms/${id}/player2`), user.uid);
+            listenToRoom();
+        }
+
+        function listenToRoom() {
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            document.getElementById('roomId').innerText = currentRoomId;
+
+            onValue(currentRoomRef, (snap) => {
+                const r = snap.val();
+                if (!r) return;
+                const isP1 = r.player1 === user.uid;
+                document.getElementById('score').innerText = isP1 ? `${r.score1} - ${r.score2}` : `${r.score2} - ${r.score1}`;
+            });
+        }
+
+        document.getElementById('scoreBtn').onclick = () => {
+            onValue(currentRoomRef, (snap) => {
+                const r = snap.val();
+                const isP1 = r.player1 === user.uid;
+                set(ref(db, `rooms/${currentRoomId}/${isP1 ? 'score1' : 'score2'}`), (isP1 ? r.score1 : r.score2) + 1);
+            }, { onlyOnce: true });
+        };
+    </script>
 </body>
 </html>
